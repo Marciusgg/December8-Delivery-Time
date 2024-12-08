@@ -1,34 +1,36 @@
-function formatPhoneNumber(phoneNumber) {
-  // Ne skaičių šalinimas iš numerio
-  var clean = ("" + phoneNumber).replace(/\D/g, "");
+function calculateDeliveryTime(houses, speed) {
 
-  // Patikrinimas ar numerį sudaro 10 skaičių 
-  if (clean.length !== 10) {
-      throw new Error("Input must contain exactly 10 numeric characters");
+  // Atstumo tarp 2 taškų formulė: d=√[(x2-x1)^2+(y2-y1)^2]:
+  function canculateDistance(x1, y1, x2, y2) {
+    return Math.sqrt((x2-x1) ** 2 +(y2-y1) ** 2);
   }
 
-  // Naudojant "regular expressions", kad sulyginus gautume reikiamas tel. nr. dalis
-  var match = clean.match(/^(\d{3})(\d{3})(\d{4})$/);
+  // Pradiniai kintamieji:
+  let totalDistance = 0, currentX = 0, currentY = 0;
 
-  // Jeigu "clean/švari" įvestis sutampa su šablonu, formatuoti numerį
-  if (match) {
-      return "(" + match[1] + ") " + match[2] + "-" + match[3];
+  // Apskaičiuojam atstumą nuo pradinio taško iki kito iš eilės:
+  for (let house of houses) {
+    const [houseX, houseY] = house;
+    totalDistance += canculateDistance(currentX, currentY, houseX, houseY);
+    currentX = houseX;
+    currentY = houseY;
   }
 
-  // Jeigu nesutampa:
-  return null;
+  // Grįžimo į pradinę padėtį apskaičiavimas:
+  totalDistance += canculateDistance(currentX, currentY, 0, 0);
+
+  // Laiko apskaičiavimas:
+  const totalTime = totalDistance / speed;
+
+  // Paverčiam gautą skaičių į valandas ir minutes:
+  // Math.floor() paima sveiką skaičiaus dalį:
+  const hours = Math.floor(totalTime);
+  // Likusią skaičiaus dalį paverčiam į minutes:
+  const minutes = Math.round((totalTime - hours) * 60);
+
+  return `${hours} hour(s) and ${minutes} minute(s)`;
 }
 
-function formatAndDisplayPhoneNumber() {
-  const inputField = document.getElementById("phoneInput");
-  const outputDiv = document.getElementById("output");
-
-  try {
-      const formattedNumber = formatPhoneNumber(inputField.value);
-      outputDiv.textContent = `Ho Ho Ho: ${formattedNumber}`;
-      outputDiv.style.color = "green";
-  } catch (error) {
-      outputDiv.textContent = error.message + ", you naughty elf!";
-      outputDiv.style.color = "red";
-  }
-}
+const houses = [[1, 2], [3, 4], [5, 6]];
+const speed = 10;
+console.log(calculateDeliveryTime(houses, speed));
